@@ -15,13 +15,14 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Size;
+import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.homepunk.github.vinylrecognizer.R;
-import com.homepunk.github.vinylrecognizer.custom.surface.AutoFitSurfaceView;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.ArrayList;
@@ -33,8 +34,16 @@ import timber.log.Timber;
 
 import static android.hardware.camera2.CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP;
 
-
 public class CameraActivity extends AppCompatActivity {
+    private static SparseIntArray ORIENTATIONS = new SparseIntArray();
+
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 0);
+        ORIENTATIONS.append(Surface.ROTATION_90, 90);
+        ORIENTATIONS.append(Surface.ROTATION_180, 180);
+        ORIENTATIONS.append(Surface.ROTATION_270, 270);
+    }
+
     private String cameraId;
 
     private CaptureRequest previewCaptureRequest;
@@ -45,11 +54,11 @@ public class CameraActivity extends AppCompatActivity {
     private CameraDevice cameraDevice;
     private CameraManager cameraManager;
 
-    private AutoFitSurfaceView surfaceView;
+    private SurfaceView surfaceView;
 
     private Handler cameraBackgroundHandler;
     private HandlerThread cameraBackgroundHandlerThread;
-    private Size previewSize;
+    private Size mPreviewSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +66,7 @@ public class CameraActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
-        surfaceView = (AutoFitSurfaceView) findViewById(R.id.surfaceView);
+        surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
     }
 
@@ -151,53 +160,27 @@ public class CameraActivity extends AppCompatActivity {
                 }
                 StreamConfigurationMap map = characteristics.get(SCALER_STREAM_CONFIGURATION_MAP);
                 Size[] sizes = map.getOutputSizes(SurfaceHolder.class);
-                for (Size size : sizes) {
-                    Timber.i("Available size: w: " + size.getWidth() + " h: " + size.getHeight());
+
+                int displayRotation = getWindowManager().getDefaultDisplay().getRotation();
+                int totalRotation = getDeviceRottation(characteristics, displayRotation);
+                boolean swapRotation = totalRotation == 90 || totalRotation == 270;
+                int rotatedWidth = width;
+                int rotatedHeight = height;
+                if (mPreviewSize == null && swapRotation) {
+                    rotatedWidth = height;
+                    rotatedHeight = width;
                 }
-                cameraManager.getCameraCharacteristics(cameraId).get(SCALER_STREAM_CONFIGURATION_MAP);
-                previewSize = chooseBigEnoughSize(sizes, width, height);
-//                surfaceView.setAspectRatio(3, 4);
 
-                Timber.i("SurfaceFrame h: " + surfaceView.getHolder().getSurfaceFrame().width() + " h: " + surfaceView.getHolder().getSurfaceFrame().height());
-//                surfaceView.getHolder().setFixedSize(previewSize.getWidth(), previewSize.getHeight());
-//                surfaceView.getHolder().setFixedSize(previewSize.getWidth(), previewSize.getHeight());
-                // surfaceView.setSupportedPreviewSizes(sizes);
+                Timber.i("w: " + rotatedWidth + " h: " + rotatedHeight);
+                mPreviewSize = chooseBigEnough(sizes, rotatedWidth, rotatedHeight);
+                Timber.i("big enough: w: " + mPreviewSize.getWidth() + " h: " + mPreviewSize.getHeight());
+                surfaceView.getHolder().setFixedSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
 
-                // Save the camera id to open later.
                 this.cameraId = cameraId;
                 return;
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Given {@code choices} of {@code Size}s supported by a camera, chooses the smallest one whose
-     * width and height are at least as large as the respective requested values.
-     *
-     * @param choices The list of sizes that the camera supports for the intended output class
-     * @param width   The minimum desired width
-     * @param height  The minimum desired height
-     * @return The optimal {@code Size}, or an arbitrary one if none were big enough
-     */
-    @SuppressLint("NewApi")
-    private Size chooseBigEnoughSize(Size[] choices, int width, int height) {
-        // Collect the supported resolutions that are at least as big as the preview Surface
-        List<Size> bigEnough = new ArrayList<Size>();
-        for (Size option : choices) {
-            int optionWidth = option.getWidth();
-            int optionHeight = option.getHeight();
-            if (optionWidth >= width && optionHeight >= height) {
-                bigEnough.add(option);
-            }
-        }
-        // Pick the smallest of those, assuming we found any
-        if (bigEnough.size() > 0) {
-            return Collections.min(bigEnough, new CompareSizesByArea());
-        } else {
-            Timber.i("Couldn't find any suitable preview size");
-            return choices[0];
         }
     }
 
@@ -255,6 +238,42 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Given {@code choices} of {@code Size}s supported by a camera, chooses the smallest one whose
+     * width and height are at least as large as the respective requested values.
+     *
+     * @param choices The list of sizes that the camera supports for the intended output class
+     * @param width   The minimum desired width
+     * @param height  The minimum desired height
+     * @return The optimal {@code Size}, or an arbitrary one if none were big enough
+     */
+    @SuppressLint("NewApi")
+    private Size chooseBigEnough(Size[] choices, int width, int height) {
+        // Collect the supported resolutions that are at least as big as the preview Surface
+        List<Size> bigEnough = new ArrayList<Size>();
+        for (Size option : choices) {
+            int optionWidth = option.getWidth();
+            int optionHeight = option.getHeight();
+            if (optionWidth >= width && optionHeight >= height) {
+                bigEnough.add(option);
+            }
+        }
+        // Pick the smallest of those, assuming we found any
+        if (bigEnough.size() > 0) {
+            return Collections.min(bigEnough, new CompareSizesByArea());
+        } else {
+            Timber.i("Couldn't find any suitable preview size");
+            return choices[0];
+        }
+    }
+
+    @SuppressLint("NewApi")
+    private int getDeviceRottation(CameraCharacteristics characteristics, int deviceOrientation) {
+        int sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+        deviceOrientation = ORIENTATIONS.get(deviceOrientation);
+        return (sensorOrientation + deviceOrientation + 360) % 360;
+    }
+
     @SuppressLint("NewApi")
     static class CompareSizesByArea implements Comparator<Size> {
         @Override
@@ -263,29 +282,5 @@ public class CameraActivity extends AppCompatActivity {
             return Long.signum((long) lhs.getWidth() * lhs.getHeight() -
                     (long) rhs.getWidth() * rhs.getHeight());
         }
-    }
-
-    @SuppressLint("NewApi")
-    private Size getOptimalPreviewSize(Size[] mapSizes, int width, int height) {
-        List<Size> collectedSizes = new ArrayList<>();
-        for (Size option : mapSizes) {
-            if (width > height) {
-                if (option.getWidth() > width
-                        && option.getHeight() > height) {
-                    collectedSizes.add(option);
-                }
-            } else {
-                if (option.getWidth() > height
-                        && option.getHeight() > width) {
-                    collectedSizes.add(option);
-                }
-            }
-        }
-
-        if (!collectedSizes.isEmpty()) {
-            return Collections.min(collectedSizes, (lhs, rhs) -> Long.signum(lhs.getWidth() * lhs.getHeight() - rhs.getWidth() * rhs.getHeight()));
-        }
-
-        return mapSizes[0];
     }
 }
