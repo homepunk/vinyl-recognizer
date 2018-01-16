@@ -45,6 +45,7 @@ public class ImageSaver implements Runnable {
             Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
             mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mImageFileName)));
             if (mContext != null) {
+//                Need to ve able to see saved images in the gallery view
                 mContext.sendBroadcast(mediaStoreUpdateIntent);
             }
 

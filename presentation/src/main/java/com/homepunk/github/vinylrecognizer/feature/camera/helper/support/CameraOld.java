@@ -1,8 +1,11 @@
-package com.homepunk.github.vinylrecognizer.feature.camera.support;
+package com.homepunk.github.vinylrecognizer.feature.camera.helper.support;
 
 import android.hardware.Camera;
+import android.os.HandlerThread;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.homepunk.github.vinylrecognizer.feature.camera.helper.support.listener.CaptureListener;
 
 import java.io.IOException;
 
@@ -18,6 +21,35 @@ public class CameraOld implements CameraSupport {
     private SurfaceHolder.Callback surfaceHolderCallback;
 
     @Override
+    public void init(SurfaceHolder holder) {
+
+    }
+
+    @Override
+    public void onCameraResume() {
+
+    }
+
+    @Override
+    public void open() {
+
+    }
+
+    @Override
+    public void onCameraPause() {
+
+    }
+
+    @Override
+    public void capture(CaptureListener listener) {
+
+    }
+
+    @Override
+    public void setRunningHandlerThread(HandlerThread handlerThread) {
+
+    }
+
     public CameraSupport open(final int cameraId) {
         this.camera = Camera.open(cameraId);
         surfaceHolderCallback = new SurfaceHolder.Callback() {
@@ -54,22 +86,20 @@ public class CameraOld implements CameraSupport {
         return this;
     }
 
-    @Override
     public int getOrientation(final int cameraId) {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, info);
         return info.orientation;
     }
 
-    @Override
-    public void setSurfaceView(SurfaceView surfaceView) {
-        this.surfaceView = surfaceView;
+    public void init(SurfaceView view) {
+        this.surfaceView = view;
     }
 
-    @Override
-    public void setDisplayOrientation(int degrees) {
+    private void setDisplayOrientation(int degrees) {
         if (camera != null) {
             camera.setDisplayOrientation(degrees);
         }
     }
+
 }
