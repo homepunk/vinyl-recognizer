@@ -4,20 +4,20 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.SurfaceView;
 import android.view.View;
 
 import com.homepunk.github.vinylrecognizer.R;
+import com.homepunk.github.vinylrecognizer.custom.surface.SquareSurfaceView;
+import com.homepunk.github.vinylrecognizer.feature.camera.helper.support.CameraSupport;
 import com.homepunk.github.vinylrecognizer.feature.camera.interfaces.CameraPresenter;
 import com.homepunk.github.vinylrecognizer.feature.camera.interfaces.CameraView;
-import com.homepunk.github.vinylrecognizer.feature.camera.helper.support.CameraSupport;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class CameraActivity extends AppCompatActivity implements CameraView {
-    @BindView(R.id.surfaceView) SurfaceView surfaceView;
+    @BindView(R.id.surfaceView) SquareSurfaceView surfaceView;
 
     private CameraPresenter mPresenter;
 
@@ -27,7 +27,6 @@ public class CameraActivity extends AppCompatActivity implements CameraView {
         setContentView(R.layout.activity_camera);
         ButterKnife.bind(this);
         mPresenter = new CameraActivityPresenter();
-        mPresenter.bind(this);
     }
 
     @OnClick(R.id.vinyl)
@@ -38,6 +37,7 @@ public class CameraActivity extends AppCompatActivity implements CameraView {
     @Override
     protected void onResume() {
         super.onResume();
+        mPresenter.bind(this);
         mPresenter.onCameraResume();
     }
 

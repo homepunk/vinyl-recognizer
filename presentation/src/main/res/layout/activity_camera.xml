@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.homepunk.github.vinylrecognizer.feature.camera.CameraActivity">
 
-    <SurfaceView
+    <com.homepunk.github.vinylrecognizer.custom.surface.SquareSurfaceView
         android:id="@+id/surfaceView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
