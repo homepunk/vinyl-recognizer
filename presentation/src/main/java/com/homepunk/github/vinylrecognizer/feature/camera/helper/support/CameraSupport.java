@@ -1,7 +1,7 @@
 package com.homepunk.github.vinylrecognizer.feature.camera.helper.support;
 
 import android.os.HandlerThread;
-import android.view.SurfaceHolder;
+import android.view.TextureView;
 
 import com.homepunk.github.vinylrecognizer.feature.camera.helper.support.listener.CaptureListener;
 
@@ -10,7 +10,7 @@ import com.homepunk.github.vinylrecognizer.feature.camera.helper.support.listene
  **/
 
 public interface CameraSupport {
-    void init(SurfaceHolder holder);
+    void setPreview(TextureView view);
 
     void open();
 

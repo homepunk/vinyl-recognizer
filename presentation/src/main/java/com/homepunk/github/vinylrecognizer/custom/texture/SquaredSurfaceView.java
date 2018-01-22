@@ -1,4 +1,4 @@
-package com.homepunk.github.vinylrecognizer.custom.surface;
+package com.homepunk.github.vinylrecognizer.custom.texture;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -16,20 +16,20 @@ import timber.log.Timber;
  * Created by Homepunk on 16.01.2018.
  **/
 
-public class SquareSurfaceView extends SurfaceView {
+public class SquaredSurfaceView extends SurfaceView {
     private float mSquareMargin;
 
-    public SquareSurfaceView(Context context) {
+    public SquaredSurfaceView(Context context) {
         super(context);
         init();
     }
 
-    public SquareSurfaceView(Context context, AttributeSet attrs) {
+    public SquaredSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public SquareSurfaceView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public SquaredSurfaceView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -42,8 +42,8 @@ public class SquareSurfaceView extends SurfaceView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int width = getMeasuredWidth();
-        int height = getMeasuredHeight();
+        int width = getWidth();
+        int height = getHeight();
         Timber.i("onDraw: w: " + width + " h: " + height);
         float squareLength = width - mSquareMargin;
 
@@ -52,6 +52,5 @@ public class SquareSurfaceView extends SurfaceView {
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.GREEN);
         canvas.drawRect(rectF, paint);
-
     }
 }

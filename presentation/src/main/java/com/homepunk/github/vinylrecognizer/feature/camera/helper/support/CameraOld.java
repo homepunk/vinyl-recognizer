@@ -4,6 +4,7 @@ import android.hardware.Camera;
 import android.os.HandlerThread;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 
 import com.homepunk.github.vinylrecognizer.feature.camera.helper.support.listener.CaptureListener;
 
@@ -20,13 +21,14 @@ public class CameraOld implements CameraSupport {
     private SurfaceHolder surfaceHolder;
     private SurfaceHolder.Callback surfaceHolderCallback;
 
+
     @Override
-    public void init(SurfaceHolder holder) {
+    public void onCameraResume() {
 
     }
 
     @Override
-    public void onCameraResume() {
+    public void setPreview(TextureView view) {
 
     }
 
