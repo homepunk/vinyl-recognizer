@@ -8,7 +8,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
-        
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -16,15 +15,23 @@ buildscript {
 }
 
 allprojects {
-    ext {
-        androidApplicationId = 'com.github.homepunk.vinylrecognizer'
-        androidVersionCode = 1
-        androidVersionName = "1.0"
-        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
-        testApplicationId = 'com.fernandocejas.android10.sample.presentation.test'
+    repositories {
+        google()
+        jcenter()
     }
 }
 
+ext {
+    minSdkVersion = 19
+    targetSdkVersion = 26
+    compileSdkVersion = 26
+    buildToolsVersion = "26.0.2"
+
+    applicationId = 'com.github.homepunk.vinylrecognizer'
+    versionCode = 1
+    versionName = "1.0"
+    androidJUnitRunner = "android.support.test.runner.AndroidJUnitRunner"
+}
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

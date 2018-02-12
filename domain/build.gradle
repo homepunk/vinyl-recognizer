@@ -1,8 +1,7 @@
 apply plugin: 'java-library'
 
 dependencies {
-    def domainDependencies = rootProject.ext.domainDependencies;
-    implementation domainDependencies.rxJava
+    implementation rxDependencies.rxJava
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }

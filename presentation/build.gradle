@@ -1,21 +1,19 @@
 apply plugin: 'com.android.application'
 
 android {
-    def globalConfiguration = rootProject.extensions.getByName("ext")
-
-    compileSdkVersion globalConfiguration["androidCompileSdkVersion"]
-    buildToolsVersion globalConfiguration["androidBuildToolsVersion"]
+    compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion globalConfiguration["androidMinSdkVersion"]
-        targetSdkVersion globalConfiguration["androidTargetSdkVersion"]
+        applicationId rootProject.applicationId
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
 
-        applicationId globalConfiguration["androidApplicationId"]
-        versionCode globalConfiguration["androidVersionCode"]
-        versionName globalConfiguration["androidVersionName"]
-        testInstrumentationRunner globalConfiguration["testInstrumentationRunner"]
-        testApplicationId globalConfiguration["testApplicationId"]
+        versionCode rootProject.versionCode
+        versionName rootProject.versionName
+        testInstrumentationRunner rootProject.androidJUnitRunner
+
         vectorDrawables.useSupportLibrary = true
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -24,6 +22,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -35,34 +34,27 @@ android {
 }
 
 dependencies {
-    def presentationDependencies = rootProject.ext.presentationDependencies;
-
     implementation project(':domain')
     implementation project(':data')
 
-    //  Logging
-    implementation presentationDependencies.timber
+    implementation supportDependencies.multiDex
+    implementation supportDependencies.appCompat
+    implementation supportDependencies.design
+    implementation supportDependencies.cardView
+    implementation supportDependencies.recyclerView
+    implementation supportDependencies.constraintLayout
 
-    //  Dependency injection
-    implementation presentationDependencies.butterKnife
-    annotationProcessor presentationDependencies.butterKnifeProccessor
+    implementation injectionDependencies.butterKnife
+    annotationProcessor injectionDependencies.butterKnifeProccessor
 
-    //  Rx
-    implementation presentationDependencies.rxJava
-    implementation presentationDependencies.rxAndroid
-    implementation presentationDependencies.rxPermission
+    implementation rxDependencies.rxJava
+    implementation rxDependencies.rxAndroid
+    implementation rxDependencies.rxPermission
 
-    //  Native UI
-    implementation presentationDependencies.recyclerView
-    implementation presentationDependencies.gridLayout
-    implementation presentationDependencies.cardView
-    implementation presentationDependencies.constraintLayout
-    implementation presentationDependencies.appCompat
-    implementation presentationDependencies.design
-    implementation presentationDependencies.recyclerView
+    implementation loggingDependencies.timber
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    testImplementation 'junit:junit:4.12'}
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}

@@ -1,18 +1,17 @@
 apply plugin: 'com.android.library'
 
 android {
-    def globalConfiguration = rootProject.extensions.getByName("ext")
-
-    compileSdkVersion globalConfiguration["androidCompileSdkVersion"]
-    buildToolsVersion globalConfiguration["androidBuildToolsVersion"]
+    compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion globalConfiguration["androidMinSdkVersion"]
-        targetSdkVersion globalConfiguration["androidTargetSdkVersion"]
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
 
-        versionCode globalConfiguration["androidVersionCode"]
-        versionName globalConfiguration["androidVersionName"]
-        testInstrumentationRunner globalConfiguration["testInstrumentationRunner"]
+        versionCode rootProject.versionCode
+        versionName rootProject.versionName
+        testInstrumentationRunner rootProject.androidJUnitRunner
+
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -21,35 +20,29 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+
 }
 
 dependencies {
-    def dataDependencies = rootProject.ext.dataDependencies;
+    implementation project(':domain')
 
-    implementation project(path: ':domain')
+    implementation supportDependencies.appCompat
+    implementation supportDependencies.multiDex
 
-    //  Logging
-    implementation dataDependencies.timber
+    implementation networkDependencies.okHttp
+    implementation networkDependencies.retrofit
+    implementation networkDependencies.gson
+    implementation networkDependencies.gsonConverter
 
-    //  Rx
-    implementation dataDependencies.rxJava
-    implementation dataDependencies.rxAndroid
+    implementation databaseDependencies.room
+    annotationProcessor databaseDependencies.roomProcessor
 
-    //  Network
-    implementation dataDependencies.gson
-    implementation dataDependencies.okHttp
-    implementation dataDependencies.retrofit
-    implementation dataDependencies.rxJavaAdapter
-    implementation dataDependencies.gsonConverter
-    implementation dataDependencies.loggingInterceptor
+    implementation rxDependencies.rxJava
+    implementation rxDependencies.rxAndroid
+    implementation rxDependencies.rxSupportRoom
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
     testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
