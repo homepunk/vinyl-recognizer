@@ -34,7 +34,7 @@ public class CameraFragmentPresenter extends BasePresenter<CameraView> implement
     private RxPermissions mRxPermissions;
 
     @Override
-    protected void init() {
+    protected void onPresenterBound() {
         if (view != null) {
             mCamera = CameraHelper.getCamera(view.getFragmentActivity());
             view.setCameraPreview(mCamera);
