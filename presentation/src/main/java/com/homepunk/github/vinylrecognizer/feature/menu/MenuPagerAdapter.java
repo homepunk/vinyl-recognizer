@@ -13,11 +13,11 @@ import com.homepunk.github.vinylrecognizer.feature.menu.history.HistoryFragment;
  **/
 
 public class MenuPagerAdapter extends FragmentPagerAdapter {
-    public static final int MENU_ITEM_COUNT = 3;
-
     public static final int FRAGMENT_CAMERA = 0;
     public static final int FRAGMENT_VINYL_DETAIL = 1;
     public static final int FRAGMENT_RECOGNIZED_VINYL_HISTORY = 2;
+
+    private static final int MENU_ITEM_COUNT = 3;
 
     public MenuPagerAdapter(FragmentManager fm) {
         super(fm);
@@ -44,5 +44,4 @@ public class MenuPagerAdapter extends FragmentPagerAdapter {
     public int getCount() {
         return MENU_ITEM_COUNT;
     }
-
 }

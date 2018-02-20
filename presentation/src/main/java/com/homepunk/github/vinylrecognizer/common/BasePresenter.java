@@ -17,6 +17,7 @@ public abstract class BasePresenter<V extends View> implements Presenter<V> {
     protected List<Disposable> subscriptions = new ArrayList<>();
 
     protected abstract void onPresenterBound();
+
     @Override
     public void bind(V view) {
         this.view = view;

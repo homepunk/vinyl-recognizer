@@ -1,14 +1,26 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.homepunk.github.vinylrecognizer.feature.menu.info.VinylRecordFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="GOPA" />
+    <!--<com.homepunk.github.vinylrecognizer.custom.menuindicator.SquareView-->
+        <!--android:id="@+id/fragment_vinyl_detail_square_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--app:animate="true"-->
+        <!--app:animationDuration="4000"-->
+        <!--app:margin="16dp" />-->
+
+    <!--<Button-->
+        <!--android:id="@+id/fragment_vinyl_detail_button_animate"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@id/fragment_vinyl_detail_square_view"-->
+        <!--android:layout_marginTop="@dimen/margin_padding_32dp"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:text="Animate" />-->
 
 </RelativeLayout>

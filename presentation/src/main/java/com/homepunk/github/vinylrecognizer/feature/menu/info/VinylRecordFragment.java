@@ -11,6 +11,9 @@ import com.homepunk.github.vinylrecognizer.R;
 import butterknife.ButterKnife;
 
 public class VinylRecordFragment extends Fragment {
+//    @BindView(R.id.fragment_vinyl_detail_square_view)
+//    SquareView squareView;
+
     public static VinylRecordFragment newInstance() {
         VinylRecordFragment fragment = new VinylRecordFragment();
         Bundle args = new Bundle();
@@ -25,4 +28,9 @@ public class VinylRecordFragment extends Fragment {
         ButterKnife.bind(this, root);
         return root;
     }
+
+//    @OnClick(R.id.fragment_vinyl_detail_button_animate)
+//    public void onAnimateButtonClick() {
+//        squareView.showAnimation();
+//    }
 }
