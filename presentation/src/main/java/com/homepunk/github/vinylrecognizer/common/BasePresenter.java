@@ -17,6 +17,7 @@ public abstract class BasePresenter<V extends View> implements Presenter<V> {
     protected List<Disposable> subscriptions = new ArrayList<>();
 
     protected abstract void onPresenterBound();
+    protected abstract void onPresenterTerminate();
     @Override
     public void bind(V view) {
         this.view = view;
@@ -25,6 +26,7 @@ public abstract class BasePresenter<V extends View> implements Presenter<V> {
 
     @Override
     public void terminate() {
+        onPresenterTerminate();
         if (this.view != null) {
             this.view = null;
         }

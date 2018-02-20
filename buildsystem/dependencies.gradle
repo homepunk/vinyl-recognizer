@@ -51,4 +51,8 @@ ext {
             timber:                 "com.jakewharton.timber:timber:${timberVersion}",
             loggingInterceptor:     "com.squareup.okhttp3:logging-interceptor:${loggingInterceptorVerison}"
     ]
+
+    uiDependencies = [
+            navigationTabStrip:     "com.github.devlight.navigationtabstrip:navigationtabstrip:1.0.4"
+    ]
 }

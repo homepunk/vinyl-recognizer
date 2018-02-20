@@ -4,17 +4,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/activity_menu_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/colorPrimary" />
+
+    <FrameLayout
+        android:id="@+id/activity_menu_navigation_tab_frame_layout"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:layout_weight="1"
+        android:background="@color/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/activity_menu_toolbar">
+
+        <com.gigamole.navigationtabstrip.NavigationTabStrip
+            android:id="@+id/activity_menu_navigation_tab_strip"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            app:nts_active_color="@color/colorAccent"
+            app:nts_color="@color/colorAccent"
+            app:nts_corners_radius="1dp"
+            app:nts_inactive_color="#ffff"
+            app:nts_size="15sp"
+            app:nts_titles="@array/titles"
+            app:nts_weight="3dp" />
+
+    </FrameLayout>
+
     <android.support.v4.view.ViewPager
         android:id="@+id/activity_menu_view_pager"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/activity_menu_navigation_tab_frame_layout" />
 
-    <android.support.design.widget.TabLayout
-        android:id="@+id/activity_menu_tab_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 </android.support.constraint.ConstraintLayout>

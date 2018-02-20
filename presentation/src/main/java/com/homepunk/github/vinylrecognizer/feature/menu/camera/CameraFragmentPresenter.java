@@ -43,6 +43,11 @@ public class CameraFragmentPresenter extends BasePresenter<CameraView> implement
     }
 
     @Override
+    protected void onPresenterTerminate() {
+
+    }
+
+    @Override
     public void onCameraResume() {
         mCamera.setRunningHandlerThread(new HandlerThread("BackgroundCameraThread"));
         mCamera.onCameraResume();

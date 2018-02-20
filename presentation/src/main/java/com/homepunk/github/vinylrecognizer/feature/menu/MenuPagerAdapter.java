@@ -5,7 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.homepunk.github.vinylrecognizer.feature.menu.camera.CameraFragment;
-import com.homepunk.github.vinylrecognizer.feature.menu.info.VinylRecordFragment;
+import com.homepunk.github.vinylrecognizer.feature.menu.collection.RecordCollectionFragment;
 import com.homepunk.github.vinylrecognizer.feature.menu.history.HistoryFragment;
 
 /**
@@ -16,7 +16,7 @@ public class MenuPagerAdapter extends FragmentPagerAdapter {
     public static final int MENU_ITEM_COUNT = 3;
 
     public static final int FRAGMENT_CAMERA = 0;
-    public static final int FRAGMENT_VINYL_DETAIL = 1;
+    public static final int FRAGMENT_RECORD_COLLECTION = 1;
     public static final int FRAGMENT_RECOGNIZED_VINYL_HISTORY = 2;
 
     public MenuPagerAdapter(FragmentManager fm) {
@@ -29,8 +29,8 @@ public class MenuPagerAdapter extends FragmentPagerAdapter {
             case FRAGMENT_CAMERA: {
                 return CameraFragment.newInstance();
             }
-            case FRAGMENT_VINYL_DETAIL: {
-                return VinylRecordFragment.newInstance();
+            case FRAGMENT_RECORD_COLLECTION: {
+                return RecordCollectionFragment.newInstance();
             }
             case FRAGMENT_RECOGNIZED_VINYL_HISTORY: {
                 return HistoryFragment.newInstance();

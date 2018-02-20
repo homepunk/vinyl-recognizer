@@ -1,4 +1,4 @@
-package com.homepunk.github.vinylrecognizer.feature.menu.info;
+package com.homepunk.github.vinylrecognizer.feature.menu.collection;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,9 +10,13 @@ import com.homepunk.github.vinylrecognizer.R;
 
 import butterknife.ButterKnife;
 
-public class VinylRecordFragment extends Fragment {
-    public static VinylRecordFragment newInstance() {
-        VinylRecordFragment fragment = new VinylRecordFragment();
+/**
+ * Created by Homepunk on 20.02.2018.
+ **/
+
+public class RecordCollectionFragment extends Fragment {
+    public static RecordCollectionFragment newInstance() {
+        RecordCollectionFragment fragment = new RecordCollectionFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
