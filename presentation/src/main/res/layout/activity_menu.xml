@@ -11,16 +11,16 @@
         android:background="@color/colorPrimary"
         app:animationDuration="400"
         app:stripColor="@color/colorAccent"
-        app:stripHeight="2dp"
-        app:stripFactor="2.5"/>
+        app:stripFactor="2.5"
+        app:stripHeight="4dp"
+        app:stripTransformationTab="0"/>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/activity_menu_view_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/activity_menu_tab_indicator"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/activity_menu_tab_indicator" />
 </android.support.constraint.ConstraintLayout>

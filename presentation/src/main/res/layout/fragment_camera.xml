@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorAccent"
     tools:context=".feature.menu.camera.CameraFragment">
 
     <TextureView
@@ -12,15 +11,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <View
-        android:id="@+id/activity_camera_rectangle"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_padding_32dp"
-        android:layout_marginStart="@dimen/margin_padding_16dp"
-        android:layout_marginEnd="@dimen/margin_padding_16dp"
-        android:background="@drawable/shape_rectangle" />
+    <!--<View-->
+        <!--android:id="@+id/activity_camera_rectangle"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="0dp"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_marginTop="@dimen/margin_padding_32dp"-->
+        <!--android:layout_marginStart="@dimen/margin_padding_16dp"-->
+        <!--android:layout_marginEnd="@dimen/margin_padding_16dp"-->
+        <!--android:background="@drawable/shape_rectangle" />-->
 
     <ImageView
         android:id="@+id/activity_camera_photo_button"

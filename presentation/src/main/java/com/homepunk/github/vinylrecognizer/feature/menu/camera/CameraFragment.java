@@ -1,6 +1,6 @@
 package com.homepunk.github.vinylrecognizer.feature.menu.camera;
 
-import android.graphics.Point;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,7 +14,6 @@ import com.homepunk.github.vinylrecognizer.R;
 import com.homepunk.github.vinylrecognizer.feature.menu.camera.helper.support.CameraSupport;
 import com.homepunk.github.vinylrecognizer.feature.menu.camera.interfaces.CameraPresenter;
 import com.homepunk.github.vinylrecognizer.feature.menu.camera.interfaces.CameraView;
-import com.homepunk.github.vinylrecognizer.util.DimensionUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -22,7 +21,7 @@ import butterknife.OnClick;
 
 public class CameraFragment extends Fragment implements CameraView {
     @BindView(R.id.activity_camera_texture_view) TextureView textureView;
-    @BindView(R.id.activity_camera_rectangle) View rectangleView;
+//    @BindView(R.id.activity_camera_rectangle) View rectangleView;
 
     private CameraPresenter mPresenter;
 
@@ -51,13 +50,13 @@ public class CameraFragment extends Fragment implements CameraView {
     @Override
     public void onStart() {
         super.onStart();
-        ViewGroup.LayoutParams layoutParams = rectangleView.getLayoutParams();
-        Point displaySize = new Point();
-        getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
-        int margins = (int) DimensionUtil.convertDpToPixel(getContext(), 32);
-        layoutParams.width = displaySize.x - margins;
-        layoutParams.height = displaySize.x - margins;
-        rectangleView.setLayoutParams(layoutParams);
+//        ViewGroup.LayoutParams layoutParams = rectangleView.getLayoutParams();
+//        Point displaySize = new Point();
+//        getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
+//        int margins = (int) DimensionUtil.convertDpToPixel(getContext(), 32);
+//        layoutParams.width = displaySize.x - margins;
+//        layoutParams.height = displaySize.x - margins;
+//        rectangleView.setLayoutParams(layoutParams);
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.homepunk.github.vinylrecognizer.custom.striptransformer.TabNavigation
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Created by Homepunk on 12.02.2018.
@@ -20,7 +21,7 @@ public class MenuActivity extends AppCompatActivity {
     @BindView(R.id.activity_menu_view_pager)
     ViewPager vPager;
     @BindView(R.id.activity_menu_tab_indicator)
-    TabNavigationStripTransformer vStripTransformerPageNavigation;
+    TabNavigationStripTransformer vTabNavigationStripTransformer;
 
     private MenuPagerAdapter mPagerAdapter;
 
@@ -34,17 +35,21 @@ public class MenuActivity extends AppCompatActivity {
         vPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-//                vStripTransformerPageNavigation.setCurrentTab(position);
-                if (position == MenuPagerAdapter.FRAGMENT_CAMERA) {
-                    startFullscreenMode();
-                } else {
-                    exitFullscreenMode();
-                }
+//                if (position == MenuPagerAdapter.FRAGMENT_CAMERA) {
+//                    startFullscreenMode();
+//                } else {
+//                    exitFullscreenMode();
+//                }
             }
 
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                vStripTransformerPageNavigation.onPageScrolled(position, positionOffset);
+                vTabNavigationStripTransformer.onPageScrolled(position, positionOffset);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                Timber.i("state changed " + state);
             }
         });
         vPager.setCurrentItem(MenuPagerAdapter.FRAGMENT_VINYL_DETAIL);
