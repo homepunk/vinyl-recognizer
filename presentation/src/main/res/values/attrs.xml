@@ -7,6 +7,8 @@
     <declare-styleable name="TabNavigationStripTransformer">
         <attr name="animationDuration" format="integer"/>
         <attr name="stripTransformationTab" format="integer"/>
+        <attr name="backgroundColor" format="color"/>
+        <attr name="squareMargin" format="dimension"/>
         <attr name="stripColor" format="color"/>
         <attr name="stripFactor" format="float"/>
         <attr name="stripHeight" format="dimension"/>
