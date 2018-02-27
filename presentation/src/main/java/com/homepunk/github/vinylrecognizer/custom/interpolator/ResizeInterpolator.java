@@ -2,8 +2,6 @@ package com.homepunk.github.vinylrecognizer.custom.interpolator;
 
 import android.view.animation.Interpolator;
 
-import timber.log.Timber;
-
 /**
  * Created by Homepunk on 20.02.2018.
  **/
@@ -33,7 +31,7 @@ public class ResizeInterpolator implements Interpolator {
 
     public float getInterpolation(final float input, final boolean resizeIn) {
         mIsLeftDirection = resizeIn;
-        Timber.i("mIsLeftDirection = " + mIsLeftDirection + " interpolator value = " + getInterpolation(input));
+//        Timber.i("mIsLeftDirection = " + mIsLeftDirection + " interpolator value = " + getInterpolation(input));
         return getInterpolation(input);
     }
 }

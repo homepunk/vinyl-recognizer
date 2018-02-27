@@ -57,8 +57,8 @@ public class TabNavigationStripTransformer extends View {
     private float mCurrentFraction;
     private int mAnimationDuration;
 
-    private float mStartStripX;
-    private float mEndStripX;
+    private float mStripStartX;
+    private float mStripEndX;
     // Values during animation
     private float mStripTop;
     private float mStripLeft;
@@ -68,11 +68,13 @@ public class TabNavigationStripTransformer extends View {
 
     private String[] mTitles;
 
-    private int mLastTabIndex;
-    private int mCurrentTabIndex;
-    private int mStripTransformationTabIndex;
+    private final TabNavigationResolver mTabNavigationResolver = new TabNavigationResolver();
 
-    private boolean mIsStripMovementInLeftDirection;
+//    private int mLastTabIndex;
+//    private int mCurrentTabIndex;
+//    private int mStripTransformationTabIndex;
+
+//    private boolean mIsStripMovementInLeftDirection;
     private float mSquareLeftStripTopX;
     private float mSquareLeftStripTopY;
     private float mSquareLeftStripBottomY;
@@ -126,67 +128,66 @@ public class TabNavigationStripTransformer extends View {
     public void setCurrentTab(int tabIndex) {
         if (mAnimator.isRunning()
                 || mTitles.length == 0
-                || mCurrentTabIndex == tabIndex) {
+                /*|| mCurrentTabIndex == tabIndex*/) {
             return;
         }
-        updateCurrentTabIndex(tabIndex);
+        mTabNavigationResolver.setCurrentTab(tabIndex);
 
-        mStartStripX = mStripLeft;
-        mEndStripX = mCurrentTabIndex * mTabWidth;
+        mStripStartX = mStripLeft;
+        mStripEndX = mTabNavigationResolver.getCurrentTabPosition() * mTabWidth;
 
         mAnimator.start();
     }
 
     public void onPageScrolled(int newPosition, float positionOffset) {
-        mIsStripMovementInLeftDirection = newPosition < mCurrentTabIndex;
-
-        if (mCurrentTabIndex != newPosition) {
-            updateCurrentTabIndex(newPosition);
-            updateStripBorders(newPosition, mStripTransformationTabIndex == newPosition);
+        mTabNavigationResolver.onTabScrolled(newPosition, positionOffset);
+        if (mTabNavigationResolver.isNavigateOnNewTab()) {
+            updateStripBorders(newPosition, mTabNavigationResolver.isTransformationTab());
         }
-        Timber.i("Update strip newPosition = %s", newPosition);
         updateStripPosition(positionOffset);
     }
 
-    private void updateCurrentTabIndex(int tabIndex) {
-        mLastTabIndex = mCurrentTabIndex;
-        mCurrentTabIndex = tabIndex;
-    }
 
-    private void updateStripBorders(int position, boolean isDrawingSquare) {
-        boolean isSquareDrawn = position == mStripTransformationTabIndex
-                && !isDrawingSquare;
-        mStartStripX = isDrawingSquare ?
-                mSquareMargin :
-                isSquareDrawn ? 0 : mTabWidth * position;
-        mEndStripX = isDrawingSquare ?
-                mTabWidth * mTitles.length - mSquareMargin :
-                isSquareDrawn ? mEndStripX + mSquareMargin : mStartStripX + mTabWidth;
-        Timber.i("Determined start x = " + mStartStripX + " and end x = " + mEndStripX);
+    private void updateStripBorders(int position, boolean isSquareDrawing) {
+        boolean isSquareDrawn = mTabNavigationResolver.isTransformationTab()
+                && !isSquareDrawing;
+        if (isSquareDrawing) {
+            float stripY = mFullContainerBounds.height();
+            mStripTop = stripY - mStripHeight;
+            mStripBottom = stripY;
+            mStripStartX = mSquareMargin;
+            mStripEndX = mTabWidth * mTitles.length - mSquareMargin;
+        } else if (isSquareDrawn) {
+            mStripStartX = 0;
+            mStripEndX = mStripEndX + mSquareMargin;
+        } else {
+            mStripStartX = mTabWidth * position;
+            mStripEndX = mTabWidth + mStripStartX;
+        }
+        Timber.i("Determined start x = " + mStripStartX + " and end x = " + mStripEndX);
     }
 
     private void updateStripPosition(float fraction) {
-        // Update general fraction
-        Timber.i("Fraction = %s", fraction);
+//        Timber.i("Fraction = %s", fraction);
         mCurrentFraction = fraction;
-        if (mCurrentTabIndex == mStripTransformationTabIndex) {
+        if (mTabNavigationResolver.isTransformationTab()) {
             final float interpolation = mResizeInterpolator.getInterpolation(fraction, true);
-            final float step = mTabWidth * mLastTabIndex * interpolation;
-            mStripLeft = mStartStripX + step;
-            mStripRight = mEndStripX - step;
+            final float step = mTabWidth * mTabNavigationResolver.getLastTabPosition() * interpolation;
+            mStripLeft = mStripStartX + step;
+            mStripRight = mStripEndX - step;
             final int alpha = (int) ((MAX_ALPHA_VALUE * interpolation));
             setBackgroundAlpha(alpha);
             if (interpolation == 0) {
-                updateStripBorders(mCurrentTabIndex, false);
+                updateStripBorders(mTabNavigationResolver.getCurrentTabPosition(), false);
                 return;
             }
         } else {
-            mStripLeft = mStartStripX +
-                    (mResizeInterpolator.getInterpolation(fraction, mIsStripMovementInLeftDirection) *
-                            (mEndStripX - mStartStripX));
-            mStripRight = mStartStripX + mTabWidth +
-                    (mResizeInterpolator.getInterpolation(fraction, !mIsStripMovementInLeftDirection) *
-                            (mEndStripX - mStartStripX));
+            mStripLeft = mStripStartX +
+                    (mResizeInterpolator.getInterpolation(fraction, mTabNavigationResolver.isNavigateToLeft()) *
+                            (mStripEndX - mStripStartX));
+            mStripRight = mStripStartX + mTabWidth +
+                    (mResizeInterpolator.getInterpolation(fraction, !mTabNavigationResolver.isNavigateToLeft()) *
+                            (mStripEndX - mStripStartX));
         }
 
         postInvalidate();
@@ -218,7 +219,7 @@ public class TabNavigationStripTransformer extends View {
     }
 
     public void setStripTransformationTab(int tabIndex) {
-        mStripTransformationTabIndex = tabIndex;
+        mTabNavigationResolver.setTransformationTabPosition(tabIndex);
     }
 
     public String[] getTitles() {
