@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 
 import com.homepunk.github.vinylrecognizer.R;
@@ -51,14 +52,15 @@ public class TabNavigationStripTransformer extends View {
     private final RectF mTabBackgroundBounds = new RectF();
     private final RectF mStripBounds = new RectF();
     private final RectF mFullContainerBounds = new RectF();
+    private final RectF mSquareBounds = new RectF();
 
     private float mTabWidth;
     private float mStripHeight;
     private float mCurrentFraction;
     private int mAnimationDuration;
 
-    private float mStartStripX;
-    private float mEndStripX;
+    private float mStripStartX;
+    private float mStripEndX;
     // Values during animation
     private float mStripTop;
     private float mStripLeft;
@@ -72,8 +74,9 @@ public class TabNavigationStripTransformer extends View {
     private int mCurrentTabIndex;
     private int mStripTransformationTabIndex;
 
+    private boolean mIsSquareDrawn;
     private boolean mIsStripMovementInLeftDirection;
-    private float mSquareLeftStripTopX;
+    private float mSquareLeftStripX;
     private float mSquareLeftStripTopY;
     private float mSquareLeftStripBottomY;
 
@@ -92,6 +95,7 @@ public class TabNavigationStripTransformer extends View {
         // Speed and fix for pre 17 API
         ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_SOFTWARE, null);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
+        setBackground(new ColorDrawable(Color.TRANSPARENT));
 
         final TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.TabNavigationStripTransformer);
         try {
@@ -120,7 +124,8 @@ public class TabNavigationStripTransformer extends View {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setBackground(new ColorDrawable(Color.TRANSPARENT));
+        final int width = getWidth();
+        mSquareBounds.set(mSquareMargin, 0, width, width + mFullContainerBounds.height());
     }
 
     public void setCurrentTab(int tabIndex) {
@@ -131,8 +136,8 @@ public class TabNavigationStripTransformer extends View {
         }
         updateCurrentTabIndex(tabIndex);
 
-        mStartStripX = mStripLeft;
-        mEndStripX = mCurrentTabIndex * mTabWidth;
+        mStripStartX = mStripLeft;
+        mStripEndX = mCurrentTabIndex * mTabWidth;
 
         mAnimator.start();
     }
@@ -143,9 +148,20 @@ public class TabNavigationStripTransformer extends View {
         if (mCurrentTabIndex != newPosition) {
             updateCurrentTabIndex(newPosition);
             updateStripBorders(newPosition, mStripTransformationTabIndex == newPosition);
+            updateLayoutParams(mStripTransformationTabIndex == newPosition);
         }
         Timber.i("Update strip newPosition = %s", newPosition);
         updateStripPosition(positionOffset);
+    }
+
+    private void updateLayoutParams(boolean isSquareDrawing) {
+        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        if (isSquareDrawing) {
+            layoutParams.height = (int) mSquareBounds.height();
+            updateStripBorders(mCurrentTabIndex, isSquareDrawing);
+        } else {
+            layoutParams.height = (int) mFullContainerBounds.height();
+        }
     }
 
     private void updateCurrentTabIndex(int tabIndex) {
@@ -153,16 +169,29 @@ public class TabNavigationStripTransformer extends View {
         mCurrentTabIndex = tabIndex;
     }
 
-    private void updateStripBorders(int position, boolean isDrawingSquare) {
-        boolean isSquareDrawn = position == mStripTransformationTabIndex
-                && !isDrawingSquare;
-        mStartStripX = isDrawingSquare ?
-                mSquareMargin :
-                isSquareDrawn ? 0 : mTabWidth * position;
-        mEndStripX = isDrawingSquare ?
-                mTabWidth * mTitles.length - mSquareMargin :
-                isSquareDrawn ? mEndStripX + mSquareMargin : mStartStripX + mTabWidth;
-        Timber.i("Determined start x = " + mStartStripX + " and end x = " + mEndStripX);
+    private void updateStripBorders(int position, boolean isSquareDrawing) {
+        mIsSquareDrawn = mStripTransformationTabIndex == position
+                && !isSquareDrawing;
+        if (isSquareDrawing) {
+            float stripY = mFullContainerBounds.height();
+            mStripTop = stripY - mStripHeight;
+            mStripBottom = stripY;
+            mStripStartX = mSquareMargin;
+            mStripEndX = mTabWidth * mTitles.length - mSquareMargin;
+        } else if (mIsSquareDrawn) {
+            mStripStartX = 0;
+            mStripEndX = mStripEndX + mSquareMargin;
+        } else {
+            mStripStartX = mTabWidth * position;
+            mStripEndX = mTabWidth + mStripStartX;
+        }
+//        mStripStartX = isSquareDrawing ?
+//                mSquareMargin :
+//                isSquareDrawn ? 0 : mTabWidth * position;
+//        mStripEndX = isSquareDrawing ?
+//                mTabWidth * mTitles.length - mSquareMargin :
+//                isSquareDrawn ? mStripEndX + mSquareMargin : mStripStartX + mTabWidth;
+        Timber.i("Determined start x = " + mStripStartX + " and end x = " + mStripEndX);
     }
 
     private void updateStripPosition(float fraction) {
@@ -172,24 +201,34 @@ public class TabNavigationStripTransformer extends View {
         if (mCurrentTabIndex == mStripTransformationTabIndex) {
             final float interpolation = mResizeInterpolator.getInterpolation(fraction, true);
             final float step = mTabWidth * mLastTabIndex * interpolation;
-            mStripLeft = mStartStripX + step;
-            mStripRight = mEndStripX - step;
+            mStripLeft = mStripStartX + step;
+            mStripRight = mStripEndX - step;
             final int alpha = (int) ((MAX_ALPHA_VALUE * interpolation));
             setBackgroundAlpha(alpha);
             if (interpolation == 0) {
+//                mSquareAnimator.start();
                 updateStripBorders(mCurrentTabIndex, false);
                 return;
             }
         } else {
-            mStripLeft = mStartStripX +
+            mStripLeft = mStripStartX +
                     (mResizeInterpolator.getInterpolation(fraction, mIsStripMovementInLeftDirection) *
-                            (mEndStripX - mStartStripX));
-            mStripRight = mStartStripX + mTabWidth +
+                            (mStripEndX - mStripStartX));
+            mStripRight = mStripStartX + mTabWidth +
                     (mResizeInterpolator.getInterpolation(fraction, !mIsStripMovementInLeftDirection) *
-                            (mEndStripX - mStartStripX));
+                            (mStripEndX - mStripStartX));
         }
 
         postInvalidate();
+    }
+
+    private void updateSquareStripPosition(float fraction) {
+        mSquareLeftStripX = mSquareMargin;
+        mSquareLeftStripTopY = mTabBackgroundBounds.height();
+        final float interpolation = mResizeInterpolator.getInterpolation(fraction, true);
+        final float step = mTabWidth * mLastTabIndex * interpolation;
+
+//        mSquareLeftStripBottomY =
     }
 
     @Override
@@ -202,7 +241,6 @@ public class TabNavigationStripTransformer extends View {
 
         canvas.drawRect(mTabBackgroundBounds, mTabBackgroundPaint);
         canvas.drawRect(mStripBounds, mStripPaint);
-
     }
 
     @Override
@@ -213,8 +251,6 @@ public class TabNavigationStripTransformer extends View {
         mFullContainerBounds.set(0.0F, 0.0F, width, height);
         mTabBackgroundBounds.set(0.0F, 0.0F, width, height - mStripHeight);
         mTabWidth = width / (float) mTitles.length;
-        mStripTop = mFullContainerBounds.height() - mStripHeight;
-        mStripBottom = mFullContainerBounds.height();
     }
 
     public void setStripTransformationTab(int tabIndex) {
