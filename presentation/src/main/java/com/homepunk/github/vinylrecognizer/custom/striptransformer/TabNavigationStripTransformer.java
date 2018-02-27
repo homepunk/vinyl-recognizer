@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 
 import com.homepunk.github.vinylrecognizer.R;
@@ -49,6 +50,7 @@ public class TabNavigationStripTransformer extends View {
     private final Paint mStripPaint = new Paint(HIGH_QUALITY_FLAGS);
     private final Paint mTabBackgroundPaint = new Paint(HIGH_QUALITY_FLAGS);
     private final RectF mTabBackgroundBounds = new RectF();
+    private final RectF mSquareBounds = new RectF();
     private final RectF mStripBounds = new RectF();
     private final RectF mFullContainerBounds = new RectF();
 
@@ -68,16 +70,17 @@ public class TabNavigationStripTransformer extends View {
 
     private String[] mTitles;
 
-    private final TabNavigationResolver mTabNavigationResolver = new TabNavigationResolver();
+    private final TabNavigationIndexResolver mTabNavigationIndexResolver = new TabNavigationIndexResolver();
 
 //    private int mLastTabIndex;
 //    private int mCurrentTabIndex;
 //    private int mStripTransformationTabIndex;
 
-//    private boolean mIsStripMovementInLeftDirection;
+    //    private boolean mIsStripMovementInLeftDirection;
     private float mSquareLeftStripTopX;
     private float mSquareLeftStripTopY;
     private float mSquareLeftStripBottomY;
+    private boolean mIsBoundsMeasured;
 
     public TabNavigationStripTransformer(Context context) {
         this(context, null);
@@ -131,25 +134,42 @@ public class TabNavigationStripTransformer extends View {
                 /*|| mCurrentTabIndex == tabIndex*/) {
             return;
         }
-        mTabNavigationResolver.setCurrentTab(tabIndex);
+        mTabNavigationIndexResolver.setCurrentTab(tabIndex);
 
         mStripStartX = mStripLeft;
-        mStripEndX = mTabNavigationResolver.getCurrentTabPosition() * mTabWidth;
+        mStripEndX = mTabNavigationIndexResolver.getCurrentTabPosition() * mTabWidth;
 
         mAnimator.start();
     }
 
     public void onPageScrolled(int newPosition, float positionOffset) {
-        mTabNavigationResolver.onTabScrolled(newPosition, positionOffset);
-        if (mTabNavigationResolver.isNavigateOnNewTab()) {
-            updateStripBorders(newPosition, mTabNavigationResolver.isTransformationTab());
+        mTabNavigationIndexResolver.onTabScrolled(newPosition, positionOffset);
+        if (mTabNavigationIndexResolver.isNavigateOnNewTab()
+                && mTabNavigationIndexResolver.isTransformationTab()) {
+            updateLayoutParams(mTabNavigationIndexResolver.isScrollToLeft());
+        }
+
+        if (mTabNavigationIndexResolver.isNavigateOnNewTab()) {
+            updateStripBorders(newPosition, mTabNavigationIndexResolver.isTransformationTab());
         }
         updateStripPosition(positionOffset);
     }
 
+    private void updateLayoutParams(boolean mIsSquareDrawing) {
+        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        layoutParams.width = (int) mFullContainerBounds.width();
+        if (mIsSquareDrawing) {
+            Timber.i("Square height = " + mSquareBounds.height());
+            layoutParams.height = (int) mSquareBounds.height();
+        } else {
+            Timber.i("Container height = " + mFullContainerBounds.height());
+            layoutParams.height = (int) mFullContainerBounds.height();
+        }
+        requestLayout();
+    }
 
     private void updateStripBorders(int position, boolean isSquareDrawing) {
-        boolean isSquareDrawn = mTabNavigationResolver.isTransformationTab()
+        boolean isSquareDrawn = mTabNavigationIndexResolver.isTransformationTab()
                 && !isSquareDrawing;
         if (isSquareDrawing) {
             float stripY = mFullContainerBounds.height();
@@ -170,23 +190,23 @@ public class TabNavigationStripTransformer extends View {
     private void updateStripPosition(float fraction) {
 //        Timber.i("Fraction = %s", fraction);
         mCurrentFraction = fraction;
-        if (mTabNavigationResolver.isTransformationTab()) {
+        if (mTabNavigationIndexResolver.isTransformationTab()) {
             final float interpolation = mResizeInterpolator.getInterpolation(fraction, true);
-            final float step = mTabWidth * mTabNavigationResolver.getLastTabPosition() * interpolation;
+            final float step = mTabWidth * mTabNavigationIndexResolver.getLastTabPosition() * interpolation;
             mStripLeft = mStripStartX + step;
             mStripRight = mStripEndX - step;
             final int alpha = (int) ((MAX_ALPHA_VALUE * interpolation));
             setBackgroundAlpha(alpha);
             if (interpolation == 0) {
-                updateStripBorders(mTabNavigationResolver.getCurrentTabPosition(), false);
+                updateStripBorders(mTabNavigationIndexResolver.getCurrentTabPosition(), false);
                 return;
             }
         } else {
             mStripLeft = mStripStartX +
-                    (mResizeInterpolator.getInterpolation(fraction, mTabNavigationResolver.isNavigateToLeft()) *
+                    (mResizeInterpolator.getInterpolation(fraction, mTabNavigationIndexResolver.isNavigateToLeft()) *
                             (mStripEndX - mStripStartX));
             mStripRight = mStripStartX + mTabWidth +
-                    (mResizeInterpolator.getInterpolation(fraction, !mTabNavigationResolver.isNavigateToLeft()) *
+                    (mResizeInterpolator.getInterpolation(fraction, !mTabNavigationIndexResolver.isNavigateToLeft()) *
                             (mStripEndX - mStripStartX));
         }
 
@@ -207,19 +227,30 @@ public class TabNavigationStripTransformer extends View {
     }
 
     @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (!mIsBoundsMeasured) {
+            mSquareBounds.set(mSquareMargin, 0.0f, right - mSquareMargin, right + bottom);
+            mFullContainerBounds.set(0.0F, 0.0F, right, bottom);
+            mTabBackgroundBounds.set(0.0F, 0.0F, right, bottom - mStripHeight);
+            mTabWidth = right / (float) mTitles.length;
+            mStripTop = mFullContainerBounds.height() - mStripHeight;
+            mStripBottom = mFullContainerBounds.height();
+            mIsBoundsMeasured = true;
+        }
+        Timber.i("onlayout width + " + right + " height " + bottom);
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        final float width = MeasureSpec.getSize(widthMeasureSpec);
-        final float height = MeasureSpec.getSize(heightMeasureSpec);
-        mFullContainerBounds.set(0.0F, 0.0F, width, height);
-        mTabBackgroundBounds.set(0.0F, 0.0F, width, height - mStripHeight);
-        mTabWidth = width / (float) mTitles.length;
-        mStripTop = mFullContainerBounds.height() - mStripHeight;
-        mStripBottom = mFullContainerBounds.height();
+        Timber.i("onlayout width + " + MeasureSpec.getSize(widthMeasureSpec)
+                + " height " + MeasureSpec.getSize(heightMeasureSpec));
+
     }
 
     public void setStripTransformationTab(int tabIndex) {
-        mTabNavigationResolver.setTransformationTabPosition(tabIndex);
+        mTabNavigationIndexResolver.setTransformationTabPosition(tabIndex);
     }
 
     public String[] getTitles() {

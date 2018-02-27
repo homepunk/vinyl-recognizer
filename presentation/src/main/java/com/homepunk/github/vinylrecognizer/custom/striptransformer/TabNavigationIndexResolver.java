@@ -6,7 +6,7 @@ import timber.log.Timber;
  * Created by Homepunk on 27.02.2018.
  **/
 
-public class TabNavigationResolver {
+public class TabNavigationIndexResolver {
     private static final float OFFSET_BOUNDARY_VALUE = 0.5f;
 
     private int mLastPosition;
@@ -76,7 +76,7 @@ public class TabNavigationResolver {
     }
 
     public boolean isNavigateOnNewTab() {
-        return mIsNewPosition;
+        return mIsNewPosition || !mIsNavigateToLeft;
     }
 
     private boolean isNavigateOnNewTab(int position) {
