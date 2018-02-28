@@ -53,12 +53,11 @@ public class TabNavigationStripTransformer extends View {
     private final RectF mSquareBounds = new RectF();
     private final RectF mStripBounds = new RectF();
     private final RectF mFullContainerBounds = new RectF();
-
+    private final TabNavigationIndexResolver mTabNavigationIndexResolver = new TabNavigationIndexResolver();
     private float mTabWidth;
     private float mStripHeight;
     private float mCurrentFraction;
     private int mAnimationDuration;
-
     private float mStripStartX;
     private float mStripEndX;
     // Values during animation
@@ -67,20 +66,17 @@ public class TabNavigationStripTransformer extends View {
     private float mStripRight;
     private float mStripBottom;
     private float mSquareMargin;
-
     private String[] mTitles;
 
-    private final TabNavigationIndexResolver mTabNavigationIndexResolver = new TabNavigationIndexResolver();
-
-//    private int mLastTabIndex;
+    //    private int mLastTabIndex;
 //    private int mCurrentTabIndex;
 //    private int mStripTransformationTabIndex;
-
     //    private boolean mIsStripMovementInLeftDirection;
     private float mSquareLeftStripTopX;
     private float mSquareLeftStripTopY;
     private float mSquareLeftStripBottomY;
     private boolean mIsBoundsMeasured;
+    private boolean mIsLayoutParamsUpdated;
 
     public TabNavigationStripTransformer(Context context) {
         this(context, null);
@@ -143,13 +139,37 @@ public class TabNavigationStripTransformer extends View {
     }
 
     public void onPageScrolled(int newPosition, float positionOffset) {
+        Timber.i("onPageScrolled newPosition = " + newPosition);
         mTabNavigationIndexResolver.onTabScrolled(newPosition, positionOffset);
-        if (mTabNavigationIndexResolver.isNavigateOnNewTab()
-                && mTabNavigationIndexResolver.isTransformationTab()) {
-            updateLayoutParams(mTabNavigationIndexResolver.isScrollToLeft());
+//        if (mTabNavigationIndexResolver.isNavigateOnNewLeftTab()
+//                && mTabNavigationIndexResolver.isTransformationTab()
+//                || mTabNavigationIndexResolver.isTransformationTab() && !mTabNavigationIndexResolver.isNavigateToLeft()) {
+//            Timber.i("Update Layout params");
+//            //            updateLayoutParams(mTabNavigationIndexResolver.isScrollToLeft());
+//        }
+
+        if (mTabNavigationIndexResolver.isTransformationTab()
+                && mTabNavigationIndexResolver.isPreviousNavigationInTheOppositeDirection()) {
+            mIsLayoutParamsUpdated = false;
+            Timber.i("User changed scroll direction");
         }
 
-        if (mTabNavigationIndexResolver.isNavigateOnNewTab()) {
+        if (!mIsLayoutParamsUpdated) {
+            if (mTabNavigationIndexResolver.isNavigateOnNewLeftTab()
+                    && mTabNavigationIndexResolver.isTransformationTab()) {
+                Timber.i("Navigating to left -> update Layout params");
+                mIsLayoutParamsUpdated = true;
+            } else if (mTabNavigationIndexResolver.isNavigateToRight()
+                    && mTabNavigationIndexResolver.isTransformationTab()) {
+                Timber.i("Navigating to right -> update Layout params");
+                mIsLayoutParamsUpdated = true;
+            } else {
+                mIsLayoutParamsUpdated = false;
+            }
+        }
+
+        if (mTabNavigationIndexResolver.isNavigateOnNewLeftTab()) {
+            Timber.i("Update Strip Borders");
             updateStripBorders(newPosition, mTabNavigationIndexResolver.isTransformationTab());
         }
         updateStripPosition(positionOffset);
@@ -244,7 +264,7 @@ public class TabNavigationStripTransformer extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Timber.i("onlayout width + " + MeasureSpec.getSize(widthMeasureSpec)
+        Timber.i("onMeasure width + " + MeasureSpec.getSize(widthMeasureSpec)
                 + " height " + MeasureSpec.getSize(heightMeasureSpec));
 
     }
@@ -288,7 +308,7 @@ public class TabNavigationStripTransformer extends View {
     }
 
     public void setBackgroundAlpha(int alpha) {
-        Timber.i("Alpha = %s", alpha);
+//        Timber.i("Alpha = %s", alpha);
         mTabBackgroundPaint.setAlpha(alpha);
     }
 

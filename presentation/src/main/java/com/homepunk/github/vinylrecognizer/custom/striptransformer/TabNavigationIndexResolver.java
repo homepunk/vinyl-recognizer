@@ -16,13 +16,15 @@ public class TabNavigationIndexResolver {
     private float mLastOffset;
 
     private boolean mIsNavigateToLeft;
+    private boolean mIsPreviousNavigateToLeft;
     private boolean mIsScrollToLeft;
+    private boolean mIsPreviousScrollToLeft;
     private boolean mIsNewPosition;
 
     public void setCurrentTab(int position) {
-        mIsNavigateToLeft = position < mCurrentPosition;
-        if (isNavigateOnNewTab(position)) {
-            Timber.i("Update tab position = %s", position);
+        mIsNavigateToLeft = position <= mCurrentPosition;
+        if (isNavigateOnNewLeftTab(position)) {
+//            Timber.i("Update tab position = %s", position);
             mLastPosition = mCurrentPosition;
             mCurrentPosition = position;
         }
@@ -30,14 +32,19 @@ public class TabNavigationIndexResolver {
 
     public void onTabScrolled(int position, float offset) {
         setCurrentTab(position);
+        mIsPreviousScrollToLeft = mIsScrollToLeft;
         if (offset != 0) {
             if (mLastOffset != 0.0f) {
                 mIsScrollToLeft = mLastOffset > offset;
+                Timber.i("Determine is scroll to left by offset comparison " + mIsScrollToLeft);
             } else {
                 mIsScrollToLeft = offset > OFFSET_BOUNDARY_VALUE;
+                Timber.i("Determine is scroll to left by offset boundary value " + mIsScrollToLeft);
             }
         } else {
-            mIsScrollToLeft = position < mCurrentPosition;
+            mIsScrollToLeft = mIsNavigateToLeft;
+            Timber.i("Determine is scroll to left by current position " + mIsScrollToLeft
+                    + " current position = " + mCurrentPosition + " last position = " + position);
         }
 //        if (!mIsScrollToLeft
 //                && mCurrentPosition == position
@@ -67,6 +74,14 @@ public class TabNavigationIndexResolver {
         return mIsNavigateToLeft;
     }
 
+    public boolean isNavigateToRight() {
+        return !mIsScrollToLeft;
+    }
+
+    public boolean isPreviousNavigationInTheOppositeDirection() {
+        return mIsPreviousScrollToLeft != mIsScrollToLeft;
+    }
+
     public boolean isTransformationTab() {
         return mTransformationTabPosition == mCurrentPosition;
     }
@@ -75,11 +90,11 @@ public class TabNavigationIndexResolver {
         return mIsScrollToLeft;
     }
 
-    public boolean isNavigateOnNewTab() {
-        return mIsNewPosition || !mIsNavigateToLeft;
+    public boolean isNavigateOnNewLeftTab() {
+        return mIsNewPosition;
     }
 
-    private boolean isNavigateOnNewTab(int position) {
+    private boolean isNavigateOnNewLeftTab(int position) {
         return mIsNewPosition = mCurrentPosition != position;
     }
 
