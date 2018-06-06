@@ -3,11 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/VinylRecognizer.iml" filepath="$PROJECT_DIR$/VinylRecognizer.iml" />
-      <module fileurl="file://C:\Users\Nikit\Documents\Android\Github\vinyl-recognizer\VinylRecognizer.iml" filepath="C:\Users\Nikit\Documents\Android\Github\vinyl-recognizer\VinylRecognizer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../../Nikit/Documents/Android/Github/vinyl-recognizer/VinylRecognizer.iml" filepath="$PROJECT_DIR$/../../../../Nikit/Documents/Android/Github/vinyl-recognizer/VinylRecognizer.iml" />
       <module fileurl="file://$PROJECT_DIR$/data/data.iml" filepath="$PROJECT_DIR$/data/data.iml" />
       <module fileurl="file://$PROJECT_DIR$/domain/domain.iml" filepath="$PROJECT_DIR$/domain/domain.iml" />
       <module fileurl="file://$PROJECT_DIR$/presentation/presentation.iml" filepath="$PROJECT_DIR$/presentation/presentation.iml" />
-      <module fileurl="file://C:\Users\Homepunk\Documents\work\VinylRecognizer\vinyl-recognizer.iml" filepath="C:\Users\Homepunk\Documents\work\VinylRecognizer\vinyl-recognizer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vinyl-recognizer.iml" filepath="$PROJECT_DIR$/vinyl-recognizer.iml" />
     </modules>
   </component>
 </project>

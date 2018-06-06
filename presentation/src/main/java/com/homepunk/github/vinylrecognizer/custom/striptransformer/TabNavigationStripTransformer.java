@@ -62,21 +62,20 @@ public class TabNavigationStripTransformer extends View {
     private float mStripEndX;
     // Values during animation
     private float mStripTop;
-    private float mStripLeft;
-    private float mStripRight;
+    private float mCurrentStripLeft;
+    private float mCurrentStripRight;
     private float mStripBottom;
     private float mSquareMargin;
     private String[] mTitles;
 
-    //    private int mLastTabIndex;
-//    private int mCurrentTabIndex;
-//    private int mStripTransformationTabIndex;
-    //    private boolean mIsStripMovementInLeftDirection;
     private float mSquareLeftStripTopX;
     private float mSquareLeftStripTopY;
     private float mSquareLeftStripBottomY;
     private boolean mIsBoundsMeasured;
     private boolean mIsLayoutParamsUpdated;
+    private float mLastStripStartX;
+    private float mLastStripEndX;
+    private boolean mIsBordersUpdated;
 
     public TabNavigationStripTransformer(Context context) {
         this(context, null);
@@ -132,7 +131,7 @@ public class TabNavigationStripTransformer extends View {
         }
         mTabNavigationIndexResolver.setCurrentTab(tabIndex);
 
-        mStripStartX = mStripLeft;
+        mStripStartX = mCurrentStripLeft;
         mStripEndX = mTabNavigationIndexResolver.getCurrentTabPosition() * mTabWidth;
 
         mAnimator.start();
@@ -141,44 +140,137 @@ public class TabNavigationStripTransformer extends View {
     public void onPageScrolled(int newPosition, float positionOffset) {
         Timber.i("onPageScrolled newPosition = " + newPosition);
         mTabNavigationIndexResolver.onTabScrolled(newPosition, positionOffset);
-//        if (mTabNavigationIndexResolver.isNavigateOnNewLeftTab()
-//                && mTabNavigationIndexResolver.isTransformationTab()
-//                || mTabNavigationIndexResolver.isTransformationTab() && !mTabNavigationIndexResolver.isNavigateToLeft()) {
-//            Timber.i("Update Layout params");
-//            //            updateLayoutParams(mTabNavigationIndexResolver.isScrollToLeft());
+
+//        if (mTabNavigationIndexResolver.isTransformationTab()
+//                && mTabNavigationIndexResolver.isPreviousNavigationInTheOppositeDirection()) {
+//            mIsLayoutParamsUpdated = false;
+//            Timber.w("User changed scroll direction");
 //        }
 
-        if (mTabNavigationIndexResolver.isTransformationTab()
-                && mTabNavigationIndexResolver.isPreviousNavigationInTheOppositeDirection()) {
-            mIsLayoutParamsUpdated = false;
-            Timber.i("User changed scroll direction");
-        }
-
-        if (!mIsLayoutParamsUpdated) {
-            if (mTabNavigationIndexResolver.isNavigateOnNewLeftTab()
+        /*if (!mIsLayoutParamsUpdated) {
+            if (mTabNavigationIndexResolver.isNavigatingOnNewTab()
                     && mTabNavigationIndexResolver.isTransformationTab()) {
-                Timber.i("Navigating to left -> update Layout params");
+//                Timber.i("Navigating to left -> update Layout params");
                 mIsLayoutParamsUpdated = true;
             } else if (mTabNavigationIndexResolver.isNavigateToRight()
                     && mTabNavigationIndexResolver.isTransformationTab()) {
-                Timber.i("Navigating to right -> update Layout params");
+//                Timber.i("Navigating to right -> update Layout params");
                 mIsLayoutParamsUpdated = true;
+//                hz temp reshenie
+//                mStripStartX = 360;
+//                mStripEndX= 720;
             } else {
                 mIsLayoutParamsUpdated = false;
             }
         }
-
-        if (mTabNavigationIndexResolver.isNavigateOnNewLeftTab()) {
-            Timber.i("Update Strip Borders");
-            updateStripBorders(newPosition, mTabNavigationIndexResolver.isTransformationTab());
+*/
+        Timber.i(String.format("Prospective position = %1s, current position = = %2s, raw position = = %3s",
+                mTabNavigationIndexResolver.getNewPosition(),
+                mTabNavigationIndexResolver.getCurrentTabPosition(),
+                newPosition));
+        if (mTabNavigationIndexResolver.getNewPosition() != mTabNavigationIndexResolver.getCurrentTabPosition()
+                && !mIsBordersUpdated) {
+            Timber.e("Update Strip Borders");
+            updateStripBorders(mTabNavigationIndexResolver.getCurrentTabPosition());
+            mIsBordersUpdated = true;
+        } else if (mTabNavigationIndexResolver.getNewPosition() == mTabNavigationIndexResolver.getCurrentTabPosition()){
+            Timber.w("Reset borders update");
+            mIsBordersUpdated = false;
         }
         updateStripPosition(positionOffset);
     }
 
-    private void updateLayoutParams(boolean mIsSquareDrawing) {
+    private void updateStripBorders(int position) {
+//        boolean isSquareDrawn = !isTransformationTab
+//                && mTabNavigationIndexResolver.isTransformationTab();
+        mLastStripStartX = mStripStartX != 0 ? mStripStartX : mTabNavigationIndexResolver.getCurrentTabPosition() * mTabWidth;
+        mLastStripEndX = mStripEndX != 0 ? mStripEndX : mLastStripStartX + mTabWidth;
+
+        //        if navigating on transformation tab make strip as top side of rectangle
+        if (mTabNavigationIndexResolver.isNavigateToTransformationTab()) {
+            Timber.i("isSquareDrawing borders");
+
+            float stripY = mFullContainerBounds.height();
+            mStripTop = stripY - mStripHeight;
+            mStripBottom = stripY;
+            mStripStartX = mSquareMargin;
+            mStripEndX = mTabWidth * mTitles.length - mSquareMargin;
+        } /*else if (mTabNavigationIndexResolver.isTransformationTab()) {
+            Timber.i("isSquareDrawn borders");
+            mStripStartX = 0;
+            mStripEndX = mStripEndX + mSquareMargin;
+        } */else {
+            Timber.i("Default borders");
+            mStripStartX = mTabWidth *
+                    (mTabNavigationIndexResolver.isScrolling() ? mTabNavigationIndexResolver.getNewPosition() : mTabNavigationIndexResolver.getCurrentTabPosition());
+            mStripEndX = mTabWidth + mStripStartX;
+        }
+//        mIsBordersUpdated = true;
+        Timber.e(String.format("Determined resulting strip position [start x = %s and end x = %s], previous strip [start x = %2s and end x = %3s]",
+                mStripStartX, mStripEndX, mLastStripStartX, mLastStripEndX));
+    }
+
+    private void updateStripPosition(float fraction) {
+        Timber.e("Fraction = %s", fraction);
+//        Timber.e("Current strip new [start = %1s, end = %2s]", mStripStartX, mStripEndX);
+//        Timber.e("Last strip [start = %1s, end = %2s]", mLastStripStartX, mLastStripEndX);
+        mCurrentFraction = /*mTabNavigationIndexResolver.isNavigateToRight() ?
+                1 - fraction : */fraction;
+//        Timber.e("Current fraction = %s", mCurrentFraction);
+
+        if (mTabNavigationIndexResolver.isTransformationTab() ||
+                mTabNavigationIndexResolver.isNavigateToTransformationTab()) {
+            final float interpolation = mResizeInterpolator.getInterpolation(mCurrentFraction, true);
+//            Timber.i("Interpolation = %s, Last Tab = %2s", interpolation, mTabNavigationIndexResolver.getLastTabPosition());
+            float stripWidthDelta = Math.abs(mLastStripStartX - mStripStartX);
+//            float stripWidthDelta = mTabWidth * mTabNavigationIndexResolver.getLastTabPosition() * interpolation;;
+            final float step = stripWidthDelta * interpolation;
+//            Timber.i(String.format("Step = %s", step));
+                        Timber.i("Step = %s, strip [start = %1s, end = %2s], last strip [start = %3s, end = %4s]", step, mStripStartX, mStripEndX, mLastStripStartX, mLastStripEndX);
+            if (mTabNavigationIndexResolver.isNavigateToRight()) {
+                mCurrentStripLeft = mLastStripStartX + step;
+                mCurrentStripRight = mLastStripEndX - step;
+            } else {
+                mCurrentStripLeft = mStripStartX + step;
+                mCurrentStripRight = mStripEndX - step;
+            }
+            final int alpha = (int) ((MAX_ALPHA_VALUE * interpolation));
+            setBackgroundAlpha(alpha);
+            if (interpolation == 0) {
+//                updateStripBorders(mTabNavigationIndexResolver.getCurrentTabPosition());
+                return;
+            }
+        } else if (mTabNavigationIndexResolver.isScrolling()){
+            mCurrentStripLeft = mStripStartX +
+                    (mResizeInterpolator.getInterpolation(fraction, mTabNavigationIndexResolver.isNavigateToLeft()) *
+                            (mStripEndX - mStripStartX));
+            mCurrentStripRight = mStripStartX + mTabWidth +
+                    (mResizeInterpolator.getInterpolation(fraction, !mTabNavigationIndexResolver.isNavigateToLeft()) *
+                            (mStripEndX - mStripStartX));
+            Timber.i(String.format("Default behaviour mCurrentStripLeft = %1s, mCurrentStripRight = %2s", mCurrentStripLeft, mCurrentStripRight));
+        }
+//        Timber.i("Updated mCurrentStripLeft = " + mCurrentStripLeft + " mCurrentStripRight = " + mCurrentStripRight);
+
+        postInvalidate();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        mStripBounds.set(
+                mCurrentStripLeft,
+                mStripTop,
+                mCurrentStripRight,
+                mStripBottom);
+        canvas.drawRect(mFullContainerBounds, mTabBackgroundPaint);
+        canvas.drawRect(mStripBounds, mStripPaint);
+
+    }
+
+
+    private void updateLayoutParams(boolean isTransformationTab) {
         final ViewGroup.LayoutParams layoutParams = getLayoutParams();
         layoutParams.width = (int) mFullContainerBounds.width();
-        if (mIsSquareDrawing) {
+        if (isTransformationTab) {
             Timber.i("Square height = " + mSquareBounds.height());
             layoutParams.height = (int) mSquareBounds.height();
         } else {
@@ -188,64 +280,6 @@ public class TabNavigationStripTransformer extends View {
         requestLayout();
     }
 
-    private void updateStripBorders(int position, boolean isSquareDrawing) {
-        boolean isSquareDrawn = mTabNavigationIndexResolver.isTransformationTab()
-                && !isSquareDrawing;
-        if (isSquareDrawing) {
-            float stripY = mFullContainerBounds.height();
-            mStripTop = stripY - mStripHeight;
-            mStripBottom = stripY;
-            mStripStartX = mSquareMargin;
-            mStripEndX = mTabWidth * mTitles.length - mSquareMargin;
-        } else if (isSquareDrawn) {
-            mStripStartX = 0;
-            mStripEndX = mStripEndX + mSquareMargin;
-        } else {
-            mStripStartX = mTabWidth * position;
-            mStripEndX = mTabWidth + mStripStartX;
-        }
-        Timber.i("Determined start x = " + mStripStartX + " and end x = " + mStripEndX);
-    }
-
-    private void updateStripPosition(float fraction) {
-//        Timber.i("Fraction = %s", fraction);
-        mCurrentFraction = fraction;
-        if (mTabNavigationIndexResolver.isTransformationTab()) {
-            final float interpolation = mResizeInterpolator.getInterpolation(fraction, true);
-            final float step = mTabWidth * mTabNavigationIndexResolver.getLastTabPosition() * interpolation;
-            mStripLeft = mStripStartX + step;
-            mStripRight = mStripEndX - step;
-            final int alpha = (int) ((MAX_ALPHA_VALUE * interpolation));
-            setBackgroundAlpha(alpha);
-            if (interpolation == 0) {
-                updateStripBorders(mTabNavigationIndexResolver.getCurrentTabPosition(), false);
-                return;
-            }
-        } else {
-            mStripLeft = mStripStartX +
-                    (mResizeInterpolator.getInterpolation(fraction, mTabNavigationIndexResolver.isNavigateToLeft()) *
-                            (mStripEndX - mStripStartX));
-            mStripRight = mStripStartX + mTabWidth +
-                    (mResizeInterpolator.getInterpolation(fraction, !mTabNavigationIndexResolver.isNavigateToLeft()) *
-                            (mStripEndX - mStripStartX));
-        }
-
-        postInvalidate();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        mStripBounds.set(
-                mStripLeft,
-                mStripTop,
-                mStripRight,
-                mStripBottom);
-
-        canvas.drawRect(mTabBackgroundBounds, mTabBackgroundPaint);
-        canvas.drawRect(mStripBounds, mStripPaint);
-
-    }
-
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
@@ -253,20 +287,19 @@ public class TabNavigationStripTransformer extends View {
             mSquareBounds.set(mSquareMargin, 0.0f, right - mSquareMargin, right + bottom);
             mFullContainerBounds.set(0.0F, 0.0F, right, bottom);
             mTabBackgroundBounds.set(0.0F, 0.0F, right, bottom - mStripHeight);
-            mTabWidth = right / (float) mTitles.length;
             mStripTop = mFullContainerBounds.height() - mStripHeight;
             mStripBottom = mFullContainerBounds.height();
             mIsBoundsMeasured = true;
         }
-        Timber.i("onlayout width + " + right + " height " + bottom);
+        Timber.w("onlayout width + " + right + " height " + bottom);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Timber.i("onMeasure width + " + MeasureSpec.getSize(widthMeasureSpec)
-                + " height " + MeasureSpec.getSize(heightMeasureSpec));
-
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        mTabWidth = width / (float) mTitles.length;
+        Timber.w("onMeasure: width" + width);
     }
 
     public void setStripTransformationTab(int tabIndex) {
